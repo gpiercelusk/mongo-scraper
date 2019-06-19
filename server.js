@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 mongoose.Promise = Promise;
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/scraperData"
-mongoose.connect(MONGODB_URI)
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 const db = mongoose.connection
 
 db.on('error', err => console.log(`Mongoose connection error: ${err}`))

@@ -23,9 +23,9 @@ mongoose.connect(MONGODB_URI)
 const db = mongoose.connection
 
 db.on('error', err => console.log(`Mongoose connection error: ${err}`))
-// view engine setup
-db.once('open', () => console.log(`Connected to MongoDB`))
 
+db.once('open', () => console.log(`Connected to MongoDB`))
+// view engine setup
 app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 

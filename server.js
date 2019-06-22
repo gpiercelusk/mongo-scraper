@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 const mongoose = require("mongoose");
 
+const methodOverride = require("method-override");
 
 const PORT = process.env.PORT || 8080;
 
@@ -18,10 +19,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 mongoose.Promise = Promise;
+
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/scraperData"
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
-const db = mongoose.connection
 
+const db = mongoose.connection
 db.on('error', err => console.log(`Mongoose connection error: ${err}`))
 
 db.once('open', () => console.log(`Connected to MongoDB`))
@@ -40,5 +42,13 @@ app.use(express.static("public"));
 const routes = require('./routes/index')
 app.use('/', routes)
 
+app.use(methodOverride("_method"));
+
+// Once logged in to the db through mongoose, log a success message
+db.once("open", () => {
+  console.log("Mongoose connection successful.");
+})
+
 // Start the server
 app.listen(PORT, () => console.log(`App running on port ${PORT}!`))
+

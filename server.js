@@ -1,54 +1,67 @@
-const express = require("express");
-const exphbs = require('express-handlebars');
-const bodyParser = require("body-parser");
-const logger = require("morgan");
-const mongoose = require("mongoose");
+//require dependencies
+var express = require('express')
+var bodyParser = require("body-parser");
+var mongoose = require("mongoose");
+var logger = require("morgan");
 
-const methodOverride = require("method-override");
+//require our Note and Article models
+var Note = require("./models/Note.js");
+var Article = require("./models/Article.js");
 
-const PORT = process.env.PORT || 8080;
+var methodOverride = require("method-override");
 
-// Initialize Express
-const app = express();
-
-// Configure middleware
-
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-// parse application/json
-app.use(bodyParser.json());
-
+// Set mongoose to leverage built in JavaScript ES6 Promises
 mongoose.Promise = Promise;
 
+//initialize express
+var app = express()
+
+// Set up an Express Router
+var router = express.Router();
+
+// Require our routes file pass our router object
+require("./routes/routes")(router);
+
+// Use morgan and body parser with our app
+app.use(logger("dev"));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+
+// Make public a static dir
+app.use(express.static("public"));
+
+// Have every request go through our router middleware
+app.use(router);
+
+// Database configuration with mongoose
+// mongoose.connect("mongodb://localhost/mongo-news-scraper");
+//define local mongoDB URI
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/scraperData"
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
-const db = mongoose.connection
-db.on('error', err => console.log(`Mongoose connection error: ${err}`))
 
-db.once('open', () => console.log(`Connected to MongoDB`))
-// view engine setup
-app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
-app.set('view engine', 'handlebars');
+var db = mongoose.connection;
 
-// Use morgan logger for logging requests
-app.use(logger("dev"));
-// Parse request body as JSON
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-// Make public a static folder
-app.use(express.static("public"));
+// Set Handlebars.
+var exphbs = require("express-handlebars");
 
-const routes = require('./routes/index')
-app.use('/', routes)
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
 
+// Override with POST having ?_method=DELETE
 app.use(methodOverride("_method"));
 
 // Once logged in to the db through mongoose, log a success message
-db.once("open", () => {
+db.once("open", function () {
   console.log("Mongoose connection successful.");
-})
+});
 
-// Start the server
-app.listen(PORT, () => console.log(`App running on port ${PORT}!`))
+
+
+// Listen on port 3000
+app.listen(process.env.PORT || 3000, function () {
+  console.log("App running on port 3000!");
+});
+
 
